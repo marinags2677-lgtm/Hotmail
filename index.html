@@ -2,182 +2,228 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Intersol Mail</title>
+    <title>Intersol Mail - Suite Edition</title>
     <style>
-        body { 
-            background: #004b8d; 
-            background: linear-gradient(180deg, #003366 0%, #4a90e2 100%); 
-            font-family: 'Segoe UI', Tahoma, Arial, sans-serif; 
-            margin: 0; display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; background-attachment: fixed;
+        :root { 
+            --intersol-blue: #0078d7; 
+            --header-bg: #e5effa;
+            --border-color: #a0b4cd;
         }
+        
+        body, html { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; background: #fff; }
         .hidden { display: none !important; }
 
-        /* CAJA DE LOGIN */
-        .login-box { background: white; padding: 40px; width: 360px; border-radius: 4px; box-shadow: 0 10px 35px rgba(0,0,0,0.3); }
-        .brand-logo { font-size: 26px; color: #444; margin-bottom: 20px; font-weight: 300; text-align: center; }
-        .brand-logo span { color: #d83b01; font-weight: bold; }
-
-        input, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #999; border-radius: 2px; box-sizing: border-box; }
-        .btn { background: linear-gradient(#ffbc40, #ff9d00); color: white; border: 1px solid #d48a00; padding: 8px 25px; cursor: pointer; font-weight: bold; border-radius: 3px; }
-
-        /* INTERFAZ MAIL */
-        #mail-ui { width: 100vw; height: 100vh; background: #fff; display: flex; flex-direction: column; }
-        .top-bar { background: #333; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-bar { background: #f0f0f0; border-bottom: 1px solid #ccc; padding: 8px 20px; display: flex; gap: 10px; }
-        
-        .main-container { display: flex; flex-grow: 1; overflow: hidden; }
-        .sidebar { width: 210px; background: #f9f9f9; border-right: 1px solid #ddd; padding: 20px; }
-        
-        .inbox-view { flex-grow: 1; overflow-y: auto; }
-        .mail-item { padding: 15px 20px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .mail-item:hover { background: #f5faff; }
-        .attachment-badge { font-size: 11px; background: #eee; padding: 2px 5px; border-radius: 3px; color: #666; margin-top: 5px; display: inline-block; }
-
-        /* VENTANA REDACTAR */
-        #compose-modal { 
-            display: none; position: fixed; top: 10%; left: 25%; width: 50%; 
-            background: white; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.5); z-index: 1000; 
+        /* --- LOGIN --- */
+        #login-screen {
+            background: #004b8d;
+            height: 100vh; display: flex; justify-content: center; align-items: center;
         }
-        .compose-head { background: #333; color: white; padding: 10px; display: flex; justify-content: space-between; }
+        .login-card {
+            background: white; padding: 40px; border-radius: 3px; width: 320px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .login-card h2 { font-weight: 300; margin-bottom: 20px; }
+        .login-card b { color: var(--intersol-blue); }
+        .login-card input { width: 100%; padding: 8px; margin: 5px 0 15px 0; border: 1px solid #999; }
+        .btn-login { background: #0078d7; color: white; border: 1px solid #005a9e; padding: 7px 20px; cursor: pointer; float: right; }
+
+        /* --- INTERFAZ MAIL --- */
+        #mail-ui { display: flex; flex-direction: column; height: 100vh; }
+
+        .top-info { background: var(--header-bg); padding: 5px 20px; border-bottom: 1px solid var(--border-color); font-size: 11px; display: flex; justify-content: space-between; }
+
+        .toolbar { 
+            background: linear-gradient(to bottom, #fcfdfe, #e5effa); 
+            height: 80px; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; padding: 0 15px; gap: 5px;
+        }
+        .tool-btn { 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 65px; min-width: 70px; border: 1px solid transparent; cursor: pointer; font-size: 11px;
+        }
+        .tool-btn:hover { background: rgba(255,255,255,0.6); border: 1px solid #ffba00; border-radius: 3px; }
+        .tool-btn span { font-size: 22px; margin-bottom: 2px; }
+
+        .main-layout { display: flex; flex-grow: 1; overflow: hidden; }
+
+        .folder-pane { width: 190px; border-right: 1px solid var(--border-color); background: #f0f6fc; }
+        .folder-item { padding: 8px 25px; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .folder-item.active { background: #c5d7ed; font-weight: bold; border-right: 3px solid var(--intersol-blue); }
+        .unread-count { color: var(--intersol-blue); font-weight: bold; font-size: 11px; }
+
+        .message-list { width: 340px; border-right: 1px solid var(--border-color); overflow-y: auto; }
+        .msg-item { padding: 12px 15px; border-bottom: 1px solid #e1e1e1; cursor: pointer; position: relative; }
+        .msg-item:hover { background: #f2f7fd; }
+        .msg-from { font-weight: bold; font-size: 13px; display: block; }
+        .msg-sub { font-size: 12px; color: #555; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .reading-pane { flex-grow: 1; background: #fff; display: flex; flex-direction: column; }
+        .reading-header { padding: 20px; border-bottom: 1px solid #eee; background: #fafafa; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; background: #31a24c; margin-right: 5px; }
+
+        #compose-modal { position: fixed; top: 15%; left: 25%; width: 50%; background: white; border: 1px solid #666; box-shadow: 0 5px 25px rgba(0,0,0,0.3); z-index: 1000; }
     </style>
 </head>
 <body>
 
-    <div id="login-ui" class="login-box">
-        <div class="brand-logo">Intersol <span>Mail</span></div>
-        <div id="new-user-ui">
-            <input type="text" id="r-nom" placeholder="Nombre completo">
-            <input type="text" id="r-usu" placeholder="usuario">
-            <input type="password" id="r-pas" placeholder="Contraseña">
-            <button class="btn" style="width:100%" onclick="crearCuenta()">Entrar / Registrarse</button>
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>Intersol <b>Mail</b></h2>
+            <input type="text" id="log-email" placeholder="Nombre de usuario">
+            <input type="password" id="log-pass" placeholder="Contraseña">
+            <button class="btn-login" onclick="iniciarSesion()">Iniciar sesión</button>
         </div>
     </div>
 
     <div id="mail-ui" class="hidden">
-        <div class="top-bar">
-            <span><b>Intersol</b> Mail System</span>
-            <span id="mi-id-display" style="font-size:12px;"></span>
-        </div>
-        <div class="nav-bar">
-            <button onclick="abrirRedactar()" style="background:#d83b01; color:white; border:none; padding:5px 15px; cursor:pointer;">Nuevo</button>
-            <button onclick="location.href='msn.html'">Messenger</button>
-        </div>
-        <div class="main-container">
-            <div class="sidebar">
-                <div style="font-weight:bold; color:#d83b01;">Bandeja de entrada</div>
-                <div style="margin-top:10px; font-size:12px; color:#999;">© 2026 Intersol Corp.</div>
+        <div class="top-info">
+            <div>Intersol Mail &gt; <span id="folder-title">Bandeja de entrada</span></div>
+            <div>
+                <span class="status-dot"></span> <b id="user-display"></b> | 
+                <a href="#" onclick="cerrarSesion()" style="color: #c00; text-decoration: none;">Cerrar sesión</a>
             </div>
-            <div class="inbox-view" id="lista-correos">Cargando...</div>
+        </div>
+        
+        <div class="toolbar">
+            <div class="tool-btn" onclick="abrirRedactar()"><span>📧</span>Nuevo</div>
+            <div class="tool-btn" onclick="eliminarSeleccionado()"><span>🗑️</span>Eliminar</div>
+            <div style="width: 1px; height: 40px; background: #ccc; margin: 0 10px;"></div>
+            <div class="tool-btn" onclick="location.href='msn.html'" style="color: var(--intersol-blue); font-weight: bold;">
+                <span>👥</span>Messenger
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <div class="folder-pane">
+                <div style="padding: 15px; font-weight: bold; font-size: 11px; color: #666;">CARPETAS</div>
+                <div class="folder-item active" id="f-inbox" onclick="cambiarCarpeta('inbox')">
+                    Bandeja de entrada <span class="unread-count" id="count-inbox"></span>
+                </div>
+                <div class="folder-item" id="f-spam" onclick="cambiarCarpeta('spam')">
+                    Correo no deseado <span class="unread-count" id="count-spam"></span>
+                </div>
+            </div>
+
+            <div class="message-list" id="lista-correos"></div>
+
+            <div class="reading-pane">
+                <div id="v-header" class="reading-header hidden">
+                    <h2 id="v-subject" style="margin:0; font-weight: normal; color: #000;"></h2>
+                    <div style="margin-top:10px; font-size: 12px; color: #555;">
+                        <b>De:</b> <span id="v-from"></span><br>
+                        <b>Fecha:</b> <span id="v-date"></span>
+                    </div>
+                </div>
+                <div id="v-body" style="padding: 25px; line-height: 1.6; font-size: 14px;">
+                    <p id="v-placeholder" style="color: #999; text-align: center; margin-top: 50px;">No hay ningún mensaje seleccionado.</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="compose-modal">
-        <div class="compose-head"><span>Nuevo Mensaje</span><span onclick="cerrarRedactar()" style="cursor:pointer">X</span></div>
+    <div id="compose-modal" class="hidden">
+        <div style="background: var(--header-bg); padding: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+            <b>Nuevo mensaje</b>
+            <span onclick="cerrarRedactar()" style="cursor:pointer;">✕</span>
+        </div>
         <div style="padding: 20px;">
-            <input type="text" id="m-para" placeholder="Para: usuario@intersol.com">
+            <input type="text" id="m-para" placeholder="Para:">
             <input type="text" id="m-asunto" placeholder="Asunto:">
-            
-            <div style="background:#f9f9f9; padding:10px; border:1px dashed #ccc; margin:10px 0;">
-                <label style="font-size:12px;">Adjuntar archivo:</label>
-                <input type="file" id="m-adjunto" style="font-size:11px;">
-            </div>
-
-            <textarea id="m-mensaje" rows="8" style="resize:none;" placeholder="Escribe tu mensaje..."></textarea>
-            
-            <div style="text-align:right;">
-                <button class="btn" onclick="enviarCorreo()">Enviar</button>
+            <textarea id="m-mensaje" rows="10" style="width:100%; border:1px solid #ccc;"></textarea>
+            <div style="text-align: right; margin-top:10px;">
+                <button class="btn-login" onclick="enviarCorreo()">Enviar</button>
             </div>
         </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAWMmRpC9chHuBMWbMCRFeEzhQjh1dJ0Uw",
-        databaseURL: "https://intersol-ce061-default-rtdb.firebaseio.com"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyAWMmRpC9chHuBMWbMCRFeEzhQjh1dJ0Uw", databaseURL: "https://intersol-ce061-default-rtdb.firebaseio.com" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let session = JSON.parse(localStorage.getItem('intersol_user'));
 
-    window.crearCuenta = async () => {
-        const nom = document.getElementById('r-nom').value;
-        const usu = document.getElementById('r-usu').value.trim().toLowerCase() + "@intersol.com";
-        const pas = document.getElementById('r-pas').value;
-        if(!nom || !pas) return alert("Datos incompletos");
-        
-        session = { nombre: nom, email: usu };
+    let session = JSON.parse(localStorage.getItem('intersol_user'));
+    let carpetaActual = 'inbox';
+    let seleccionadoKey = null;
+
+    window.iniciarSesion = () => {
+        const user = document.getElementById('log-email').value.trim();
+        if(!user) return alert("Ingrese usuario");
+        session = { email: user.includes('@') ? user : user + "@intersol.com" };
         localStorage.setItem('intersol_user', JSON.stringify(session));
-        mostrarMail();
+        location.reload();
     };
 
-    function mostrarMail() {
-        document.getElementById('login-ui').classList.add('hidden');
+    if(session) {
+        document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('mail-ui').classList.remove('hidden');
-        document.getElementById('mi-id-display').innerText = session.email;
-        document.body.style.background = "#fff";
-        cargarCorreos();
-    }
-
-    function cargarCorreos() {
+        document.getElementById('user-display').innerText = session.email;
+        
         onValue(ref(db, 'intersol/correos'), (snap) => {
-            const cont = document.getElementById('lista-correos');
-            cont.innerHTML = "";
+            const list = document.getElementById('lista-correos');
+            list.innerHTML = "";
+            let cInbox = 0;
+            let cSpam = 0;
+
             snap.forEach(c => {
                 const m = c.val();
                 if(m.para === session.email) {
-                    let adjuntoHTML = m.fileData ? `<br><a href="${m.fileData}" download="${m.fileName}" class="attachment-badge">📎 Descargar: ${m.fileName}</a>` : "";
+                    const esSpam = ["ganaste", "premio", "oferta"].some(p => m.asunto.toLowerCase().includes(p));
                     
-                    cont.innerHTML += `<div class="mail-item">
-                        <div style="font-weight:bold; color:#d83b01;">De: ${m.de}</div>
-                        <div style="font-size:14px; margin:5px 0;">${m.asunto}</div>
-                        <div style="font-size:12px; color:#666;">${m.mensaje}</div>
-                        ${adjuntoHTML}
-                    </div>`;
+                    if(esSpam) cSpam++; else cInbox++;
+
+                    if((carpetaActual === 'spam' && esSpam) || (carpetaActual === 'inbox' && !esSpam)) {
+                        const div = document.createElement('div');
+                        div.className = 'msg-item';
+                        div.innerHTML = `<span class="msg-from">${m.de}</span><span class="msg-sub">${m.asunto}</span>`;
+                        div.onclick = () => verCorreo(m, c.key);
+                        list.prepend(div);
+                    }
                 }
             });
+            
+            document.getElementById('count-inbox').innerText = cInbox > 0 ? `(${cInbox})` : "";
+            document.getElementById('count-spam').innerText = cSpam > 0 ? `(${cSpam})` : "";
         });
     }
 
-    window.enviarCorreo = async () => {
+    window.verCorreo = (m, key) => {
+        seleccionadoKey = key;
+        document.getElementById('v-header').classList.remove('hidden');
+        document.getElementById('v-placeholder').classList.add('hidden');
+        document.getElementById('v-subject').innerText = m.asunto;
+        document.getElementById('v-from').innerText = m.de;
+        document.getElementById('v-date').innerText = new Date(m.fecha).toLocaleString();
+        document.getElementById('v-body').innerText = m.mensaje;
+    };
+
+    window.cambiarCarpeta = (c) => {
+        carpetaActual = c;
+        document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('f-' + c).classList.add('active');
+        document.getElementById('folder-title').innerText = c === 'inbox' ? "Bandeja de entrada" : "Correo no deseado";
+        location.reload(); 
+    };
+
+    window.enviarCorreo = () => {
         const para = document.getElementById('m-para').value.trim().toLowerCase();
         const asunto = document.getElementById('m-asunto').value;
         const mensaje = document.getElementById('m-mensaje').value;
-        const fileInput = document.getElementById('m-adjunto');
-        const file = fileInput.files[0];
-
-        let fileData = null;
-        let fileName = null;
-
-        if (file) {
-            if (file.size > 1048576) return alert("El archivo es muy pesado (máximo 1MB)");
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                finalizarEnvio(para, asunto, mensaje, e.target.result, file.name);
-            };
-            reader.readAsDataURL(file);
-        } else {
-            finalizarEnvio(para, asunto, mensaje, null, null);
-        }
+        push(ref(db, 'intersol/correos'), { de: session.email, para, asunto, mensaje, fecha: Date.now() });
+        alert("Mensaje enviado"); cerrarRedactar();
     };
 
-    async function finalizarEnvio(para, asunto, mensaje, fData, fName) {
-        await push(ref(db, 'intersol/correos'), {
-            de: session.email, para, asunto, mensaje, 
-            fileData: fData, fileName: fName, fecha: Date.now()
-        });
-        alert("Enviado");
-        cerrarRedactar();
-    }
-
-    window.abrirRedactar = () => document.getElementById('compose-modal').style.display = 'block';
-    window.cerrarRedactar = () => document.getElementById('compose-modal').style.display = 'none';
-
-    if(session) mostrarMail();
+    window.cerrarSesion = () => { localStorage.removeItem('intersol_user'); location.reload(); };
+    window.abrirRedactar = () => document.getElementById('compose-modal').classList.remove('hidden');
+    window.cerrarRedactar = () => document.getElementById('compose-modal').classList.add('hidden');
+    window.eliminarSeleccionado = () => {
+        if(seleccionadoKey && confirm("¿Eliminar?")) {
+            remove(ref(db, `intersol/correos/${seleccionadoKey}`));
+            location.reload();
+        }
+    };
 </script>
 </body>
 </html>
